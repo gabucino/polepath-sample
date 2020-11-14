@@ -2,7 +2,8 @@ import React, { useState, useEffect, Fragment } from 'react';
 import EditIcon from '@material-ui/icons/Edit';
 
 import ChangeStageName from './ChangeStageName';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import * as dialogActions from '../../store/actions/fuse/dialog.actions';
 
 import FuseAnimate from '@fuse/core/FuseAnimate';
 import FusePageSimple from '@fuse/core/FusePageSimple';
@@ -12,7 +13,6 @@ import Typography from '@material-ui/core/Typography';
 import MenuItem from '@material-ui/core/MenuItem';
 import Popover from '@material-ui/core/Popover';
 import CropperPage from './CropperPage';
-
 
 import CounterWidget from './CounterWidget';
 import UserHistory from './UserHistory';
@@ -33,14 +33,15 @@ const useStyles = makeStyles(theme => ({
 
 function ProfilePage(props) {
 	const classes = useStyles();
+	const dispatch = useDispatch();
 
-	const [changeNameDialog, setChangeNameDialog] = useState(false);
 	const [popoverAnchor, setPopoverAnchor] = useState(null);
 
 	const [workingOnCount, setWorkingOnCount] = useState(0);
 
 	const [uploadedPic, setUploadedPic] = useState(null);
 
+	const dialog = useSelector(({ fuse }) => fuse.dialog.isOpen);
 	const user = useSelector(({ auth }) => auth.user);
 	const progresses = useSelector(({ moves }) => moves.progress);
 
@@ -52,8 +53,10 @@ function ProfilePage(props) {
 	}, [progresses]);
 
 	const handleUploadPicture = e => {
+		setPopoverAnchor(null)
 		if (e.target.files) {
 			setUploadedPic(URL.createObjectURL(e.target.files[0]));
+			dispatch(dialogActions.openDialog());
 		}
 	};
 
@@ -82,7 +85,7 @@ function ProfilePage(props) {
 									<EditIcon
 										className="ml-8 cursor-pointer"
 										fontSize="small"
-										onClick={() => setChangeNameDialog(true)}
+										onClick={() => dispatch(dialogActions.openDialog())}
 									/>
 								</Typography>
 							</FuseAnimate>
@@ -114,23 +117,19 @@ function ProfilePage(props) {
 				<div className="p-16 sm:p-24">
 					<ChangeStageName
 						action="confirm"
-						open={changeNameDialog}
-						close={() => setChangeNameDialog(false)}
+						// open={changeNameDialog}
+						close={dialogActions.closeDialog}
 					/>
 					<div className="flex justify-between ">
 						{<CounterWidget count={workingOnCount} label="Moves Mastered" />}
 						{<CounterWidget count={progresses.data.length} label="Moves Started" />}
 					</div>
 					<UserHistory />{' '}
-					{uploadedPic && (
-						<CropperPage open={Boolean(uploadedPic)} src={uploadedPic} close={() => setUploadedPic(null)} />
-					)}
+					{uploadedPic && <CropperPage open={dialog} src={uploadedPic} close={dialogActions.closeDialog} />}
 				</div>
 			}
 		/>
 	);
 }
-
-
 
 export default ProfilePage;

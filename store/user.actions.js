@@ -22,16 +22,19 @@ export function removeUserData() {
 export function updatePhoto(formData) {
 	const request = axios.post(`${process.env.REACT_APP_API_PATH}/users/changeavatar`, formData);
 	return dispatch => {
+		dispatch(startLoading());
 		request
 			.then(resp => {
 				dispatch({
 					type: UPDATE_PHOTO,
 					payload: resp.data.photoURL
 				});
+				dispatch(stopLoading());
 				dispatch(showMessage({ message: 'Your photo has been uploaded. Beautiful!', variant: 'success' }));
-
+				dispatch(closeDialog())
 			})
 			.catch(err => {
+				dispatch(stopLoading());
 				dispatch(showMessage({ message: err.response.data.message, variant: 'error' }));
 			});
 	};
@@ -42,15 +45,22 @@ export function updateStageName(stageName) {
 		stageName: stageName
 	});
 	return dispatch => {
+		dispatch(startLoading('stageNameChange'));
 		request
 			.then(result => {
 				dispatch({
 					type: UPDATE_STAGENAME,
 					payload: stageName
 				});
+				dispatch(stopLoading());
+				dispatch(closeDialog())
+
 			})
 			.catch(err => {
-				dispatch(showMessage({ message: 'Something has gone wrong :( Please try again later.', variant: 'error' }));
+				dispatch(stopLoading());
+				dispatch(
+					showMessage({ message: 'Something has gone wrong :( Please try again later.', variant: 'error' })
+				);
 			});
 	};
 }

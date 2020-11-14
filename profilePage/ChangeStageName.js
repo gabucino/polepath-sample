@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Button from '@material-ui/core/Button';
 import Container from '@material-ui/core/Container';
 import Dialog from '@material-ui/core/Dialog';
@@ -12,29 +12,20 @@ import { TextFieldFormsy } from '@fuse/core/formsy';
 export default function ChangeStageName(props) {
 	const dispatch = useDispatch();
 
-	const [loading, setLoading] = useState(false);
 	const [isValid, setIsValid] = useState(false);
 
-	const stageName = useSelector(({ auth }) => auth.user.stageName);
+	const loading = useSelector(({ fuse }) => fuse.loading);
+	const isOpen = useSelector(({ fuse }) => fuse.dialog.isOpen);
 
-	const submitHandler = async model => {
-		setLoading(true);
+	const submitHandler = model => {
 		dispatch(Actions.updateStageName(model.stageName));
 	};
 
-	useEffect(() => {
-		//makes sure not to run it on initial render
-		if (loading) {
-			setLoading(false);
-			props.close();
-		}
-	}, [stageName, props]);
 
 	return (
-		<Fragment>
 			<Dialog
 				className="flex flex-col align-center"
-				open={props.open}
+				open={isOpen}
 				onClose={props.close}
 				aria-labelledby="form-dialog-title"
 			>
@@ -65,12 +56,11 @@ export default function ChangeStageName(props) {
 						<Button onClick={props.close} variant="contained" color="secondary">
 							Cancel
 						</Button>
-						<Button type="submit" variant="contained" color="secondary" disabled={loading || !isValid}>
+						<Button type="submit" variant="contained" color="secondary" disabled={loading.isLoading || !isValid}>
 							Submit
 						</Button>
 					</Container>
 				</Formsy>
 			</Dialog>
-		</Fragment>
 	);
 }

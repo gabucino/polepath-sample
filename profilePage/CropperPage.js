@@ -1,7 +1,7 @@
 import Cropper from 'cropperjs';
 import 'cropperjs/dist/cropper.min.css';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 
 import { makeStyles } from '@material-ui/core';
 
@@ -56,37 +56,40 @@ const CropperPage = props => {
 	const [blob, setBlob] = useState(null);
 	const [mounted, setMounted] = useState(false);
 
-	const photoURL = useSelector(({ auth }) => auth.user.photoURL);
-
 	const imgRef = useRef(null);
 
-	useEffect(() => {
-		if (!mounted) return;
-		const cropper = new Cropper(imgRef.current, {
-			viewMode: 2,
-			zoomable: false,
-			scalable: false,
-			aspectRatio: 1,
-			highlight: false,
-			background: false,
-			center: false,
-			guides: false,
-			crop: () => {
-				const canvas = cropper.getCroppedCanvas();
-				canvas.toBlob(blob => {
-					setBlob(blob);
-				});
-			}
-		});
-	}, [props.src, mounted]);
-
-	useEffect(() => {
-		if (mounted) props.close();
-	}, [props, photoURL]);
 
 	useEffect(() => {
 		setMounted(true);
 	}, []);
+
+	useLayoutEffect(() => {
+		// if (!mounted) return;
+		console.log('this effect runs');
+		console.log(imgRef.current);
+		if (mounted && imgRef.current) {
+			const cropper = new Cropper(imgRef.current, {
+				viewMode: 2,
+				zoomable: false,
+				scalable: false,
+				aspectRatio: 1,
+				highlight: false,
+				background: false,
+				center: false,
+				guides: false,
+				crop: () => {
+					const canvas = cropper.getCroppedCanvas();
+					canvas.toBlob(blob => {
+						setBlob(blob);
+					});
+				}
+			});
+		}
+	}, [mounted]);
+
+
+
+
 
 	const handleSubmit = async () => {
 		setBlob(null);
